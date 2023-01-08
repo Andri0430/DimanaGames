@@ -1,0 +1,111 @@
+﻿
+@page "/"
+
+<style>
+    .container{
+        width:400px;
+    }
+    button{
+        width:100px;
+        height:100px;
+        font-size:50px;
+    }
+</style>
+
+<PageTitle>Dimana Games</PageTitle>
+
+@*Cetak Score*@
+<h2>Score : @score</h2>
+<div class="container">
+    <div class="row">
+        @*Memanggil animal menggunakan perulangan*@
+        @for(var animalNumber = 0; animalNumber < shuffleAnimals.Count; animalNumber++)
+        {
+            @*Mengisi variabel animal dengan variabel list suffleAnimals berdasarkan indeks*@
+            string animal = shuffleAnimals[animalNumber];
+            @*mengisi variabel string animalDescription sesuai dengan nomor indeks, yang gunanya untuk membedakan jika gambarnya sama*@
+            string animalDescription = $"Animal #{animalNumber}";
+
+            <div class="col-3">
+                @*mengecek gambar dengan fungsi onclick yang di dalamnya terdapat method ButtonClick yang memiliki argumen
+                animal dan animalDescription*@
+                <button type="button" class="btn btn-outline-dark" @onclick="(()=> ButtonClick(animal,animalDescription))">
+                    <h1>@animal</h1>
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+    @*membuat list dengan gambar sebagai objeknya*@
+@code {
+    List<string> animals = new List<string>()
+    {
+        "🐔","🐔",
+        "🐯","🐯",
+        "🐼","🐼",
+        "🐸","🐸",
+        "🐶","🐶",
+        "🐨","🐨",
+        "🐭","🐭",
+        "🐮","🐮"
+    };
+
+    //membuat list shuffleAnimals untuk mengacak objek gambar animal
+    List<string> shuffleAnimals = new List<string>();
+
+    private void SetUpGame()
+    {   
+        //membuat objek dari fungsi Random
+        Random random = new Random();
+
+        //Operasi mengacak list animals dengan menggunakan fungsi random, lalu 
+        //hasil acakan tersebut dimasukan kedalam list yang bernama shuffleAnimals
+        shuffleAnimals = animals.OrderBy(item => random.Next()).ToList();
+    }
+
+    //Method untuk menjalankan program game yang telah kita buat
+    protected override void OnInitialized()
+    {
+        SetUpGame();
+    }
+
+    string ClickedAnimal = string.Empty;
+    string clickedAnimalDescription = string.Empty;
+    int score = 0, cek = 0;
+
+    //Method yang menerima nilai(animal,animaldescription) saat kita mengeklik gambar
+    private void ButtonClick(string animal, string animalDescription)
+    {
+        //Kondisi ketika kita mengeklik gambar kosong
+        if(ClickedAnimal == string.Empty)
+        {
+            //merubah gambar kosong yang telah di klik dengan gambar/objek yang nilainya telah kita terima,
+            //yaitu: animal = shuffleAnimals[animalNumber] , dan animalDescription = $"Animal #{animalNumber}"
+            ClickedAnimal = animal;
+            clickedAnimalDescription = animalDescription;
+        }
+
+        //Kondisi ketika kita klik dan mendapatkan hasil gambar yang sama dengan syarat nilai dari animalDeskripsinya berbeda
+        else if(ClickedAnimal == animal && clickedAnimalDescription != animalDescription)
+        {
+            shuffleAnimals = shuffleAnimals.Select(item => item.Replace(animal,string.Empty)).ToList();
+            ClickedAnimal = string.Empty;
+            score+=10;
+            cek++;
+
+            //merefresh game
+            if(cek >= 8)
+            { 
+                SetUpGame();
+                cek = 0;
+                score = 0;
+            }
+        }
+        //Kondisi jika kita tidak mendapatkan dua gambar yang sama, yang akan mengkosongkan kotak gambar tersebut
+        else
+        {
+            ClickedAnimal = string.Empty;
+        }
+    }
+}
